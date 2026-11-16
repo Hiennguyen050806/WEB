@@ -1,0 +1,172 @@
+package vn.iotstar.dao.impl;
+
+import java.util.List;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
+import vn.iotstar.config.JpaConfig;
+import vn.iotstar.dao.IVideoDao;
+import vn.iotstar.entity.Video;
+
+public class VideoDaoImpl implements IVideoDao {
+
+    @Override
+    public void insert(Video video) {
+        EntityManager em = JpaConfig.getEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            em.persist(video);
+            trans.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void update(Video video) {
+        EntityManager em = JpaConfig.getEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            em.merge(video);
+            trans.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void delete(String videoId) throws Exception {
+        EntityManager em = JpaConfig.getEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            Video video = em.find(Video.class, videoId);
+            if (video != null) {
+                em.remove(video);
+            } else {
+                throw new Exception("Không tìm thấy Video có mã: " + videoId);
+            }
+            trans.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public Video findById(String videoId) {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            return em.find(Video.class, videoId);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Video> findAll() {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            TypedQuery<Video> query = em.createNamedQuery("Video.findAll", Video.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Video> findTop10Latest() {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            // Lấy 10 video có active = 1 sắp xếp theo thứ tự giảm dần
+            String jpql = "SELECT v FROM Video v WHERE v.active = 1 ORDER BY v.videoId DESC";
+            TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+            query.setFirstResult(0);
+            query.setMaxResults(10);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Video> findAll(int page, int pageSize) {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            String jpql = "SELECT v FROM Video v WHERE v.active = 1 ORDER BY v.videoId DESC";
+            TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+            query.setFirstResult((page - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public int count() {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            String jpql = "SELECT count(v) FROM Video v WHERE v.active = 1";
+            Query query = em.createQuery(jpql);
+            return ((Long) query.getSingleResult()).intValue();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Video> searchByTitle(String keyword) {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            String jpql = "SELECT v FROM Video v WHERE v.title LIKE :keyword";
+            TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+            query.setParameter("keyword", "%" + keyword + "%");
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public void incrementViews(String videoId) {
+        EntityManager em = JpaConfig.getEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            Video video = em.find(Video.class, videoId);
+            if (video != null) {
+                video.setViews(video.getViews() + 1);
+                em.merge(video);
+            }
+            trans.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+        } finally {
+            em.close();
+        }
+    }
+}
