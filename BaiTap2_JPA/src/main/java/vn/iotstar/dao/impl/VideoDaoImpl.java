@@ -98,7 +98,7 @@ public class VideoDaoImpl implements IVideoDao {
     public List<Video> findTop10Latest() {
         EntityManager em = JpaConfig.getEntityManager();
         try {
-            // Lấy 10 video có active = 1 sắp xếp theo thứ tự giảm dần
+            // Lấy 10 video mới nhất có active = 1
             String jpql = "SELECT v FROM Video v WHERE v.active = 1 ORDER BY v.videoId DESC";
             TypedQuery<Video> query = em.createQuery(jpql, Video.class);
             query.setFirstResult(0);
@@ -124,11 +124,39 @@ public class VideoDaoImpl implements IVideoDao {
     }
 
     @Override
+    public List<Video> findByUserId(int userId, int page, int pageSize) {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            String jpql = "SELECT v FROM Video v WHERE v.user.id = :userId ORDER BY v.videoId DESC";
+            TypedQuery<Video> query = em.createQuery(jpql, Video.class);
+            query.setParameter("userId", userId);
+            query.setFirstResult((page - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public int count() {
         EntityManager em = JpaConfig.getEntityManager();
         try {
             String jpql = "SELECT count(v) FROM Video v WHERE v.active = 1";
             Query query = em.createQuery(jpql);
+            return ((Long) query.getSingleResult()).intValue();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public int countByUserId(int userId) {
+        EntityManager em = JpaConfig.getEntityManager();
+        try {
+            String jpql = "SELECT count(v) FROM Video v WHERE v.user.id = :userId";
+            Query query = em.createQuery(jpql);
+            query.setParameter("userId", userId);
             return ((Long) query.getSingleResult()).intValue();
         } finally {
             em.close();

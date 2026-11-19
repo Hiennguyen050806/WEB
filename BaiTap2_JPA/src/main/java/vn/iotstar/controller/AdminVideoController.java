@@ -12,8 +12,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import vn.iotstar.entity.Category;
+import vn.iotstar.entity.User;
 import vn.iotstar.entity.Video;
 import vn.iotstar.service.ICategoryService;
 import vn.iotstar.service.IVideoService;
@@ -22,9 +24,9 @@ import vn.iotstar.service.impl.VideoServiceImpl;
 import vn.iotstar.util.Constant;
 
 @SuppressWarnings("serial")
-@MultipartConfig(fileSizeThreshold = 1024 * 1024,
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 20, // 20MB
-        maxRequestSize = 1024 * 1024 * 50)
+        maxRequestSize = 1024 * 1024 * 50) // 50MB
 @WebServlet(urlPatterns = { "/admin/videos", "/admin/video/add", "/admin/video/insert",
         "/admin/video/edit", "/admin/video/update", "/admin/video/delete" })
 public class AdminVideoController extends HttpServlet {
@@ -82,10 +84,18 @@ public class AdminVideoController extends HttpServlet {
             video.setActive(active);
             video.setViews(0);
 
+            // Gán Category
             Category category = categoryService.findById(categoryId);
             video.setCategory(category);
 
-            // Upload poster file
+            // Gán User sở hữu video (Quan hệ 1-n giữa User và Videos)
+            HttpSession session = req.getSession(false);
+            if (session != null && session.getAttribute(Constant.SESSION_ACCOUNT) != null) {
+                User currentUser = (User) session.getAttribute(Constant.SESSION_ACCOUNT);
+                video.setUser(currentUser);
+            }
+
+            // Upload poster file bằng Multipart
             String posterFile = handleUploadPoster(req, "posterFile");
             if (posterFile != null && !posterFile.isEmpty()) {
                 video.setPoster(posterFile);
@@ -116,7 +126,6 @@ public class AdminVideoController extends HttpServlet {
 
                 String posterFile = handleUploadPoster(req, "posterFile");
                 if (posterFile != null && !posterFile.isEmpty()) {
-                    // Xóa file poster cũ nếu có
                     if (video.getPoster() != null && !video.getPoster().startsWith("http")) {
                         deleteFile(Constant.DIR + File.separator + video.getPoster());
                     }

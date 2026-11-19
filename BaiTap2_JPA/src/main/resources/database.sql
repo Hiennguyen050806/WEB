@@ -10,9 +10,26 @@ GO
 USE webst2;
 GO
 
--- Lưu ý: Hibernate có cấu hình hbm2ddl.auto = update nên sẽ tự động sinh bảng
--- nếu database webst2 đã tồn tại. Dưới đây là DDL nếu muốn tạo thủ công:
+-- Lưu ý: Hibernate có cấu hình hbm2ddl.auto = update nên sẽ tự động sinh/cập nhật bảng
+-- khi chạy ứng dụng nếu database webst2 đã tồn tại.
 
+-- 1. Bảng users
+CREATE TABLE users(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    fullname NVARCHAR(100) NULL,
+    phone VARCHAR(20) NULL,
+    avatar NVARCHAR(255) NULL,
+    roleid INT NULL,
+    status INT NULL,
+    otpCode VARCHAR(10) NULL,
+    otpExpiry DATETIME2 NULL,
+    createdDate DATETIME2 NULL
+);
+
+-- 2. Bảng categories
 CREATE TABLE categories(
     categoryId INT IDENTITY(1,1) PRIMARY KEY,
     categoryname NVARCHAR(255) NULL,
@@ -20,18 +37,22 @@ CREATE TABLE categories(
     status INT NULL
 );
 
+-- 3. Bảng videos (có mối quan hệ 1-n với bảng users và categories)
 CREATE TABLE videos(
     videoId VARCHAR(255) PRIMARY KEY,
-    active BIT NULL,
-    description NVARCHAR(MAX) NULL,
-    poster NVARCHAR(255) NULL,
-    title NVARCHAR(255) NULL,
+    active INT NULL,
+    description NVARCHAR(500) NULL,
+    poster NVARCHAR(500) NULL,
+    title NVARCHAR(500) NULL,
     views INT NULL,
     categoryId INT NULL,
-    CONSTRAINT FK_videos_categories FOREIGN KEY (categoryId) REFERENCES categories(categoryId)
+    userId INT NULL,
+    CONSTRAINT FK_videos_categories FOREIGN KEY (categoryId) REFERENCES categories(categoryId),
+    CONSTRAINT FK_videos_users FOREIGN KEY (userId) REFERENCES users(id)
 );
 
--- Dữ liệu mẫu:
-INSERT INTO categories(categoryname, images, status) VALUES (N'Điện thoại', 'iphone.jpg', 1);
-INSERT INTO categories(categoryname, images, status) VALUES (N'Laptop', 'macbook.jpg', 1);
+-- Dữ liệu mẫu Admin:
+INSERT INTO users(username, password, email, fullname, roleid, status, createdDate)
+VALUES ('admin', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'admin@iotstar.vn', N'Quản Trị Viên', 1, 1, GETDATE());
+-- Mật khẩu hash SHA-256 của '123' là a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3
 */

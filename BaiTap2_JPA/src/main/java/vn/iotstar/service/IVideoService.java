@@ -18,9 +18,15 @@ public interface IVideoService {
 
     List<Video> findAll(int page, int pageSize);
 
+    List<Video> findByUserId(int userId, int page, int pageSize);
+
     int count();
 
+    int countByUserId(int userId);
+
     int getTotalPages(int pageSize);
+
+    int getTotalPagesByUserId(int userId, int pageSize);
 
     List<Video> searchByTitle(String keyword);
 

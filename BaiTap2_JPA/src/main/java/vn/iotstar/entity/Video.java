@@ -39,11 +39,16 @@ public class Video implements Serializable {
     @JoinColumn(name = "CategoryId")
     private Category category;
 
+    // bi-directional many-to-one association to User (Mối liên hệ 1-n: 1 User có nhiều Videos)
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
+
     public Video() {
     }
 
     public Video(String videoId, int active, String description, String poster, String title, int views,
-            Category category) {
+            Category category, User user) {
         this.videoId = videoId;
         this.active = active;
         this.description = description;
@@ -51,6 +56,7 @@ public class Video implements Serializable {
         this.title = title;
         this.views = views;
         this.category = category;
+        this.user = user;
     }
 
     public String getVideoId() {
@@ -107,6 +113,14 @@ public class Video implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override

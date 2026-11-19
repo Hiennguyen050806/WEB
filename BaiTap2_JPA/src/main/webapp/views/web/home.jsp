@@ -19,8 +19,9 @@
         .video-title { font-size: 15px; font-weight: bold; margin: 0 0 8px; line-height: 1.3; }
         .video-title a { color: #212529; text-decoration: none; }
         .video-title a:hover { color: #007bff; }
-        .video-meta { font-size: 12px; color: #6c757d; display: flex; justify-content: space-between; }
+        .video-meta { font-size: 12px; color: #6c757d; display: flex; justify-content: space-between; margin-bottom: 4px; }
         .badge-cat { background: #e9ecef; color: #495057; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .video-author { font-size: 11px; color: #007bff; }
     </style>
 </head>
 <body>
@@ -29,7 +30,7 @@
 <div class="container">
     <div class="section-header">
         <h2>🔥 10 Video Mới Nhất</h2>
-        <a href="${pageContext.request.contextPath}/video" class="view-all">Xem tất cả video (Phân trang) &rarr;</a>
+        <a href="${pageContext.request.contextPath}/video" class="view-all">Xem tất cả video (Phân trang 6sp/trang) &rarr;</a>
     </div>
 
     <div class="video-grid">
@@ -48,6 +49,7 @@
                 </a>
                 <div class="video-body">
                     <h3 class="video-title">
+                        <!-- Click chuột vào tiêu đề để xem chi tiết và phát video -->
                         <a href="${pageContext.request.contextPath}/video/detail?id=${v.videoId}">
                             ${v.title}
                         </a>
@@ -56,12 +58,15 @@
                         <span>👁 ${v.views} lượt xem</span>
                         <span class="badge-cat">${v.category != null ? v.category.categoryname : 'Chung'}</span>
                     </div>
+                    <div class="video-author">
+                        👤 ${v.user != null ? (v.user.fullname != null ? v.user.fullname : v.user.username) : 'Hệ thống'}
+                    </div>
                 </div>
             </div>
         </c:forEach>
         <c:if test="${empty top10Videos}">
             <p style="color: #888; grid-column: 1 / -1; text-align: center; padding: 40px;">
-                Chưa có video nào trong hệ thống! Vui lòng đăng nhập với tài khoản Admin để thêm Video hoặc chạy file `Test.java`.
+                Chưa có video nào trong hệ thống! Vui lòng đăng nhập để thêm Video mới hoặc chạy file `Test.java`.
             </p>
         </c:if>
     </div>

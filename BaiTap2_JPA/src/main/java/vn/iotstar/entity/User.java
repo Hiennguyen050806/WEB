@@ -1,7 +1,9 @@
 package vn.iotstar.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -62,6 +65,10 @@ public class User implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "createdDate", nullable = true)
     private Date createdDate;
+
+    // bi-directional many-to-one association to Video (Mối liên hệ 1-n: 1 User có nhiều Videos)
+    @OneToMany(mappedBy = "user")
+    private List<Video> videos = new ArrayList<>();
 
     public User() {
     }
@@ -173,6 +180,29 @@ public class User implements Serializable {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public List<Video> getVideos() {
+        if (videos == null) {
+            videos = new ArrayList<>();
+        }
+        return videos;
+    }
+
+    public void setVideos(List<Video> videos) {
+        this.videos = videos;
+    }
+
+    public Video addVideo(Video video) {
+        getVideos().add(video);
+        video.setUser(this);
+        return video;
+    }
+
+    public Video removeVideo(Video video) {
+        getVideos().remove(video);
+        video.setUser(null);
+        return video;
     }
 
     @Override

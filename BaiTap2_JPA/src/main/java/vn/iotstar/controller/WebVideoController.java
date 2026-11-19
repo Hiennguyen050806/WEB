@@ -7,12 +7,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import vn.iotstar.entity.Category;
+import vn.iotstar.entity.User;
 import vn.iotstar.entity.Video;
 import vn.iotstar.service.ICategoryService;
 import vn.iotstar.service.IVideoService;
 import vn.iotstar.service.impl.CategoryServiceImpl;
 import vn.iotstar.service.impl.VideoServiceImpl;
+import vn.iotstar.util.Constant;
 
 @SuppressWarnings("serial")
 @WebServlet(urlPatterns = { "/home", "/video", "/video/detail" })
@@ -48,9 +51,16 @@ public class WebVideoController extends HttpServlet {
     }
 
     /**
-     * Yêu cầu 2: Hiển thị tất cả video phân trang 6sp/trang trên URL /video
+     * Yêu cầu 2: Hiển thị tất cả videos của user và được phân trang 6sp/trang hiển thị trên trang có URL là /video
      */
     private void handleVideoListPagination(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute(Constant.SESSION_ACCOUNT) : null;
+
+        String scope = req.getParameter("scope"); // "my" hoặc "all"
+        // Nếu user đã đăng nhập và không yêu cầu rõ scope=all thì mặc định ưu tiên xem video của user (theo đề bài)
+        boolean isMyVideos = (currentUser != null && !"all".equals(scope));
+
         int page = 1;
         String pageParam = req.getParameter("page");
         if (pageParam != null) {
@@ -61,22 +71,36 @@ public class WebVideoController extends HttpServlet {
             }
         }
 
-        List<Video> videoList = videoService.findAll(page, PAGE_SIZE);
-        int totalPages = videoService.getTotalPages(PAGE_SIZE);
-        int totalVideos = videoService.count();
+        List<Video> videoList;
+        int totalPages;
+        int totalVideos;
+
+        if (isMyVideos) {
+            videoList = videoService.findByUserId(currentUser.getId(), page, PAGE_SIZE);
+            totalPages = videoService.getTotalPagesByUserId(currentUser.getId(), PAGE_SIZE);
+            totalVideos = videoService.countByUserId(currentUser.getId());
+        } else {
+            videoList = videoService.findAll(page, PAGE_SIZE);
+            totalPages = videoService.getTotalPages(PAGE_SIZE);
+            totalVideos = videoService.count();
+        }
+
         List<Category> categories = categoryService.findAll();
 
         req.setAttribute("videoList", videoList);
         req.setAttribute("currentPage", page);
         req.setAttribute("totalPages", totalPages);
         req.setAttribute("totalVideos", totalVideos);
+        req.setAttribute("isMyVideos", isMyVideos);
+        req.setAttribute("currentUser", currentUser);
+        req.setAttribute("scope", isMyVideos ? "my" : "all");
         req.setAttribute("categories", categories);
 
         req.getRequestDispatcher("/views/web/video-list.jsp").forward(req, resp);
     }
 
     /**
-     * Yêu cầu 3: Hiển thị chi tiết và play 01 video khi bấm vào tiêu đề
+     * Yêu cầu 3: Hiển thị chi tiết và play 01 video khi bấm chuột vào tiêu đề của video đó trên trang chủ /home và trên trang /video
      */
     private void handleDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String videoId = req.getParameter("id");

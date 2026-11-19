@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemesh>
+    <!-- Cấu hình Sitemesh 3 Decorator Mappings -->
+    <mapping path="/admin/*" decorator="/decorators/admin.jsp" />
+    <mapping path="/home" decorator="/decorators/web.jsp" />
+    <mapping path="/video" decorator="/decorators/web.jsp" />
+    <mapping path="/video/*" decorator="/decorators/web.jsp" />
+    <mapping path="/login" decorator="/decorators/web.jsp" />
+    <mapping path="/register" decorator="/decorators/web.jsp" />
+    <mapping path="/verify-otp" decorator="/decorators/web.jsp" />
+    <mapping path="/forgot-password" decorator="/decorators/web.jsp" />
+    <mapping path="/reset-password" decorator="/decorators/web.jsp" />
+    <mapping path="/multiPartServlet" decorator="/decorators/web.jsp" />
+
+    <!-- Exclude static & binary resources -->
+    <mapping path="/image*" exclue="true" />
+    <mapping path="/uploads/*" exclue="true" />
+</sitemesh>
