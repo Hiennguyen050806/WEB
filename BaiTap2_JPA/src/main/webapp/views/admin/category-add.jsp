@@ -5,42 +5,89 @@
 <head>
     <meta charset="UTF-8">
     <title>Thêm Danh Mục (JPA)</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 20px; }
-        .container { width: 450px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #333; margin-top: 0; }
-        label { font-weight: bold; color: #555; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 8px; margin: 6px 0 16px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .radio-group { margin: 10px 0 20px; }
-        .btn-submit { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .btn-submit:hover { background-color: #218838; }
-        .btn-back { color: #6c757d; text-decoration: none; margin-left: 15px; }
-    </style>
 </head>
 <body>
-<div class="container">
-    <h2>Thêm Danh Mục Mới (JPA)</h2>
-    <form action="<c:url value="/admin/category/insert"/>" method="post" enctype="multipart/form-data">
-        <label for="categoryname">Category name:</label><br>
-        <input type="text" id="categoryname" name="categoryname" required placeholder="Nhập tên danh mục"><br>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold text-primary">
+                        <i class="bi bi-folder-plus me-2"></i>Thêm Danh Mục Mới (JPA)
+                    </h5>
+                    <a href="<c:url value='/admin/categories'/>" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <c:if test="${alert != null}">
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> ${alert}
+                        </div>
+                    </c:if>
 
-        <label for="images">Link images (URL):</label><br>
-        <input type="text" id="images" name="images" placeholder="https://example.com/image.png"><br>
+                    <form action="<c:url value="/admin/category/insert"/>" method="post" enctype="multipart/form-data" novalidate>
+                        <div class="mb-3">
+                            <label for="categoryname" class="form-label fw-semibold">
+                                Tên danh mục <span class="text-danger">*</span>:
+                            </label>
+                            <input type="text" id="categoryname" name="categoryname" 
+                                   value="${cate.categoryname != null ? cate.categoryname : param.categoryname}" 
+                                   class="form-control ${errors.categoryname != null ? 'is-invalid' : ''}" 
+                                   placeholder="Nhập tên danh mục..." required />
+                            <c:if test="${errors.categoryname != null}">
+                                <div class="invalid-feedback">${errors.categoryname}</div>
+                            </c:if>
+                        </div>
 
-        <label for="images1">Upload images (File):</label><br>
-        <input type="file" id="images1" name="images1"><br>
+                        <div class="mb-3">
+                            <label for="images" class="form-label fw-semibold">Hình ảnh (Đường dẫn URL):</label>
+                            <input type="text" id="images" name="images" 
+                                   value="${cate.images != null ? cate.images : param.images}" 
+                                   class="form-control" 
+                                   placeholder="https://example.com/image.png" />
+                        </div>
 
-        <label>Status:</label><br>
-        <div class="radio-group">
-            <input type="radio" id="ston" name="status" value="1" checked>
-            <label for="ston" style="font-weight: normal; margin-right: 15px;">Hoạt động</label>
-            <input type="radio" id="stoff" name="status" value="0">
-            <label for="stoff" style="font-weight: normal;">Khóa</label>
+                        <div class="mb-3">
+                            <label for="images1" class="form-label fw-semibold">Tải lên tệp ảnh (Upload Multipart):</label>
+                            <input type="file" id="images1" name="images1" 
+                                   class="form-control ${errors.images1 != null ? 'is-invalid' : ''}" 
+                                   accept="image/*" />
+                            <c:if test="${errors.images1 != null}">
+                                <div class="invalid-feedback">${errors.images1}</div>
+                            </c:if>
+                            <div class="form-text small text-muted">Hỗ trợ các định dạng .jpg, .jpeg, .png, .gif, .webp.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold d-block">Trạng thái:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="ston" name="status" value="1" 
+                                       ${(cate.status == null || cate.status == 1) ? 'checked' : ''} />
+                                <label class="form-check-label text-success fw-semibold" for="ston">
+                                    <i class="bi bi-check-circle me-1"></i> Hoạt động
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="stoff" name="status" value="0" 
+                                       ${(cate.status != null && cate.status == 0) ? 'checked' : ''} />
+                                <label class="form-check-label text-danger fw-semibold" for="stoff">
+                                    <i class="bi bi-x-circle me-1"></i> Khóa
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                                <i class="bi bi-save me-1"></i> Lưu Danh Mục
+                            </button>
+                            <a href="<c:url value='/admin/categories'/>" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <input type="submit" value="Insert" class="btn-submit">
-        <a href="<c:url value='/admin/categories'/>" class="btn-back">Quay lại</a>
-    </form>
+    </div>
 </div>
 </body>
 </html>

@@ -5,56 +5,104 @@
 <head>
     <meta charset="UTF-8">
     <title>Chỉnh Sửa Danh Mục (JPA)</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 20px; }
-        .container { width: 450px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #333; margin-top: 0; }
-        label { font-weight: bold; color: #555; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 8px; margin: 6px 0 16px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .radio-group { margin: 10px 0 20px; }
-        .preview-img { height: 140px; width: 180px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 12px; }
-        .btn-submit { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .btn-submit:hover { background-color: #0056b3; }
-        .btn-back { color: #6c757d; text-decoration: none; margin-left: 15px; }
-    </style>
 </head>
 <body>
-<div class="container">
-    <h2>Chỉnh Sửa Danh Mục (JPA)</h2>
-    <form action="<c:url value="/admin/category/update"/>" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="categoryid" value="${cate.categoryid}">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold text-primary">
+                        <i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Danh Mục (JPA)
+                    </h5>
+                    <a href="<c:url value='/admin/categories'/>" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <c:if test="${alert != null}">
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> ${alert}
+                        </div>
+                    </c:if>
 
-        <label for="categoryname">Category name:</label><br>
-        <input type="text" id="categoryname" name="categoryname" value="${cate.categoryname}" required><br>
+                    <form action="<c:url value="/admin/category/update"/>" method="post" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="categoryid" value="${cate.categoryid}">
 
-        <label for="images">Link images (URL):</label><br>
-        <input type="text" id="images" name="images" value="${cate.images}"><br>
+                        <div class="mb-3">
+                            <label for="categoryname" class="form-label fw-semibold">
+                                Tên danh mục <span class="text-danger">*</span>:
+                            </label>
+                            <input type="text" id="categoryname" name="categoryname" value="${cate.categoryname}" 
+                                   class="form-control ${errors.categoryname != null ? 'is-invalid' : ''}" 
+                                   placeholder="Nhập tên danh mục..." required />
+                            <c:if test="${errors.categoryname != null}">
+                                <div class="invalid-feedback">${errors.categoryname}</div>
+                            </c:if>
+                        </div>
 
-        <label>Ảnh hiện tại:</label><br>
-        <c:choose>
-            <c:when test="${cate.images != null && cate.images.startsWith('http')}">
-                <c:url value="${cate.images}" var="imgUrl"></c:url>
-            </c:when>
-            <c:otherwise>
-                <c:url value="/image?fname=${cate.images}" var="imgUrl"></c:url>
-            </c:otherwise>
-        </c:choose>
-        <img class="preview-img" src="${imgUrl}" alt="${cate.categoryname}" onerror="this.src='https://via.placeholder.com/180x140?text=No+Image';" /><br>
+                        <div class="mb-3">
+                            <label for="images" class="form-label fw-semibold">Hình ảnh (URL):</label>
+                            <input type="text" id="images" name="images" value="${cate.images}" 
+                                   class="form-control" placeholder="https://example.com/image.png" />
+                        </div>
 
-        <label for="images1">Upload images (chọn ảnh mới nếu cần):</label><br>
-        <input type="file" id="images1" name="images1"><br>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold d-block">Ảnh đại diện hiện tại:</label>
+                            <c:choose>
+                                <c:when test="${cate.images != null && cate.images.startsWith('http')}">
+                                    <c:url value="${cate.images}" var="imgUrl"></c:url>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:url value="/image?fname=${cate.images}" var="imgUrl"></c:url>
+                                </c:otherwise>
+                            </c:choose>
+                            <img src="${imgUrl}" alt="${cate.categoryname}" 
+                                 class="img-thumbnail rounded shadow-sm mb-2" 
+                                 style="height: 120px; width: 150px; object-fit: cover;" 
+                                 onerror="this.src='https://via.placeholder.com/150x120?text=No+Image';" />
+                        </div>
 
-        <label>Status:</label><br>
-        <div class="radio-group">
-            <input type="radio" id="ston" name="status" value="1" ${cate.status == 1 ? 'checked' : ''}>
-            <label for="ston" style="font-weight: normal; margin-right: 15px;">Hoạt động</label>
-            <input type="radio" id="stoff" name="status" value="0" ${cate.status != 1 ? 'checked' : ''}>
-            <label for="stoff" style="font-weight: normal;">Khóa</label>
+                        <div class="mb-3">
+                            <label for="images1" class="form-label fw-semibold">Tải lên tệp ảnh mới (thay thế ảnh cũ):</label>
+                            <input type="file" id="images1" name="images1" 
+                                   class="form-control ${errors.images1 != null ? 'is-invalid' : ''}" 
+                                   accept="image/*" />
+                            <c:if test="${errors.images1 != null}">
+                                <div class="invalid-feedback">${errors.images1}</div>
+                            </c:if>
+                            <div class="form-text small text-muted">Bỏ trống nếu muốn giữ nguyên ảnh hiện tại.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold d-block">Trạng thái:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="ston" name="status" value="1" 
+                                       ${cate.status == 1 ? 'checked' : ''} />
+                                <label class="form-check-label text-success fw-semibold" for="ston">
+                                    <i class="bi bi-check-circle me-1"></i> Hoạt động
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="stoff" name="status" value="0" 
+                                       ${cate.status != 1 ? 'checked' : ''} />
+                                <label class="form-check-label text-danger fw-semibold" for="stoff">
+                                    <i class="bi bi-x-circle me-1"></i> Khóa
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                                <i class="bi bi-arrow-repeat me-1"></i> Cập Nhật Danh Mục
+                            </button>
+                            <a href="<c:url value='/admin/categories'/>" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <input type="submit" value="Update" class="btn-submit">
-        <a href="<c:url value='/admin/categories'/>" class="btn-back">Quay lại</a>
-    </form>
+    </div>
 </div>
 </body>
 </html>

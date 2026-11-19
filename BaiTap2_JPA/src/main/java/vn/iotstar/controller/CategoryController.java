@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,6 +20,7 @@ import vn.iotstar.entity.Category;
 import vn.iotstar.service.ICategoryService;
 import vn.iotstar.service.impl.CategoryServiceImpl;
 import vn.iotstar.util.Constant;
+import vn.iotstar.util.ValidationUtil;
 
 @SuppressWarnings("serial")
 @MultipartConfig()
@@ -65,6 +68,38 @@ public class CategoryController extends HttpServlet {
             int status = Integer.parseInt(req.getParameter("status") != null ? req.getParameter("status") : "1");
             String images = req.getParameter("images");
 
+            // Validation cho FORM Insert Category
+            Map<String, String> errors = new HashMap<>();
+            if (ValidationUtil.isEmpty(categoryname)) {
+                errors.put("categoryname", "Tên danh mục không được để trống!");
+            }
+
+            Part part = null;
+            try {
+                part = req.getPart("images1");
+            } catch (Exception e) {
+                // Ignore multipart parse errors
+            }
+
+            if (part != null && part.getSize() > 0) {
+                String submittedFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                if (!ValidationUtil.isValidImageFile(submittedFileName)) {
+                    errors.put("images1", "Ảnh tải lên phải có định dạng .jpg, .jpeg, .png, .gif hoặc .webp!");
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                Category category = new Category();
+                category.setCategoryname(categoryname);
+                category.setStatus(status);
+                category.setImages(images);
+
+                req.setAttribute("errors", errors);
+                req.setAttribute("cate", category);
+                req.getRequestDispatcher("/views/admin/category-add.jsp").forward(req, resp);
+                return;
+            }
+
             // đưa dữ liệu vào model
             Category category = new Category();
             category.setCategoryname(categoryname);
@@ -77,7 +112,6 @@ public class CategoryController extends HttpServlet {
                 uploadDir.mkdirs();
 
             try {
-                Part part = req.getPart("images1");
                 if (part != null && part.getSize() > 0) {
                     String filename = Paths.get(part.getSubmittedFileName()).getFileName().toString();
                     int index = filename.lastIndexOf(".");
@@ -108,6 +142,44 @@ public class CategoryController extends HttpServlet {
             int status = Integer.parseInt(req.getParameter("status") != null ? req.getParameter("status") : "1");
             String images = req.getParameter("images");
 
+            // Validation cho FORM Edit Category
+            Map<String, String> errors = new HashMap<>();
+            if (ValidationUtil.isEmpty(categoryname)) {
+                errors.put("categoryname", "Tên danh mục không được để trống!");
+            }
+
+            Part part = null;
+            try {
+                part = req.getPart("images1");
+            } catch (Exception e) {
+                // Ignore multipart parse errors
+            }
+
+            if (part != null && part.getSize() > 0) {
+                String submittedFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                if (!ValidationUtil.isValidImageFile(submittedFileName)) {
+                    errors.put("images1", "Ảnh tải lên phải có định dạng .jpg, .jpeg, .png, .gif hoặc .webp!");
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                Category category = cateService.findById(categoryid);
+                if (category == null) {
+                    category = new Category();
+                    category.setCategoryid(categoryid);
+                }
+                category.setCategoryname(categoryname);
+                category.setStatus(status);
+                if (images != null && !images.trim().isEmpty()) {
+                    category.setImages(images);
+                }
+
+                req.setAttribute("errors", errors);
+                req.setAttribute("cate", category);
+                req.getRequestDispatcher("/views/admin/category-edit.jsp").forward(req, resp);
+                return;
+            }
+
             // đưa dữ liệu vào model
             Category category = cateService.findById(categoryid);
             String fileold = (category != null && category.getImages() != null) ? category.getImages() : "avatar.png";
@@ -126,7 +198,6 @@ public class CategoryController extends HttpServlet {
                 uploadDir.mkdirs();
 
             try {
-                Part part = req.getPart("images1");
                 if (part != null && part.getSize() > 0) {
                     // xóa file cũ trên thư mục nếu không phải link web
                     if (fileold != null && !fileold.startsWith("http")) {

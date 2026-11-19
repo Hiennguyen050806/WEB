@@ -4,43 +4,52 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Quên Mật Khẩu</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .auth-card { width: 380px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
-        .form-control { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
-        .btn-submit { width: 100%; padding: 12px; background: #007bff; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .btn-submit:hover { background: #0056b3; }
-        .footer-links { text-align: center; margin-top: 20px; font-size: 14px; }
-        .footer-links a { color: #007bff; text-decoration: none; }
-    </style>
+    <title>Quên Mật Khẩu - Hệ Thống Video</title>
 </head>
 <body>
-<jsp:include page="/views/common/header.jsp" />
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4 p-md-5">
+                    <h3 class="card-title text-center mb-3 fw-bold text-primary">
+                        <i class="bi bi-key-fill me-2"></i>Quên Mật Khẩu
+                    </h3>
+                    <p class="text-muted text-center small mb-4">
+                        Nhập địa chỉ email tài khoản của bạn để nhận mã xác thực OTP đặt lại mật khẩu mới.
+                    </p>
 
-<div class="auth-card">
-    <h2>Quên Mật Khẩu</h2>
-    <p style="font-size: 13px; color: #666; text-align: center;">Nhập email tài khoản của bạn để nhận mã xác nhận OTP đặt lại mật khẩu.</p>
+                    <c:if test="${alert != null}">
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> ${alert}
+                        </div>
+                    </c:if>
 
-    <c:if test="${alert != null}">
-        <div class="alert-error">${alert}</div>
-    </c:if>
+                    <form action="${pageContext.request.contextPath}/forgot-password" method="post" novalidate>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Email tài khoản:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" value="${email != null ? email : param.email}" 
+                                       class="form-control ${emailError != null ? 'is-invalid' : ''}" 
+                                       placeholder="email@example.com" required />
+                                <c:if test="${emailError != null}">
+                                    <div class="invalid-feedback">${emailError}</div>
+                                </c:if>
+                            </div>
+                        </div>
 
-    <form action="${pageContext.request.contextPath}/forgot-password" method="post">
-        <div class="form-group">
-            <label>Email tài khoản:</label>
-            <input type="email" name="email" class="form-control" placeholder="example@gmail.com" required />
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-send me-1"></i> Gửi Mã OTP Xác Nhận
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 small text-muted">
+                        Nhớ lại mật khẩu? <a href="${pageContext.request.contextPath}/login" class="fw-semibold text-decoration-none">Đăng nhập</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <button type="submit" class="btn-submit">Gửi Mã OTP</button>
-    </form>
-
-    <div class="footer-links">
-        Nhớ mật khẩu? <a href="${pageContext.request.contextPath}/login">Đăng nhập</a>
     </div>
 </div>
 </body>

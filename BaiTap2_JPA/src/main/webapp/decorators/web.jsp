@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><sitemesh:write property='title'/>${pageTitle != null ? pageTitle : 'Hệ Thống Video &amp; Bán Hàng'}</title>
+    <title><sitemesh:write property='title'/></title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -93,7 +93,6 @@
     <!-- Nội dung chính được Decorate bởi SiteMesh 3 -->
     <main class="main-content">
         <sitemesh:write property='body'/>
-        ${body}
     </main>
 
     <!-- Footer Template (Bootstrap 5) -->

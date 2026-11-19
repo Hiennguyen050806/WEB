@@ -4,53 +4,80 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Đặt Lại Mật Khẩu</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .auth-card { width: 400px; margin: 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
-        .form-control { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
-        .alert-success { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
-        .btn-submit { width: 100%; padding: 12px; background: #28a745; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .btn-submit:hover { background: #218838; }
-    </style>
+    <title>Đặt Lại Mật Khẩu - Hệ Thống Video</title>
 </head>
 <body>
-<jsp:include page="/views/common/header.jsp" />
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4 p-md-5">
+                    <h3 class="card-title text-center mb-3 fw-bold text-success">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Đặt Lại Mật Khẩu
+                    </h3>
 
-<div class="auth-card">
-    <h2>Đặt Lại Mật Khẩu Mới</h2>
+                    <c:if test="${alert != null}">
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> ${alert}
+                        </div>
+                    </c:if>
+                    <c:if test="${success != null}">
+                        <div class="alert alert-success py-2 small" role="alert">
+                            <i class="bi bi-check-circle-fill me-1"></i> ${success}
+                        </div>
+                    </c:if>
 
-    <c:if test="${alert != null}">
-        <div class="alert-error">${alert}</div>
-    </c:if>
-    <c:if test="${success != null}">
-        <div class="alert-success">${success}</div>
-    </c:if>
+                    <form action="${pageContext.request.contextPath}/reset-password" method="post" novalidate>
+                        <input type="hidden" name="email" value="${email}" />
 
-    <form action="${pageContext.request.contextPath}/reset-password" method="post">
-        <input type="hidden" name="email" value="${email}" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mã xác thực OTP (6 số):</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-123"></i></span>
+                                <input type="text" name="otp" maxlength="6" 
+                                       class="form-control text-center fw-bold fs-5 ${errors.otp != null ? 'is-invalid' : ''}" 
+                                       placeholder="123456" required />
+                                <c:if test="${errors.otp != null}">
+                                    <div class="invalid-feedback">${errors.otp}</div>
+                                </c:if>
+                            </div>
+                            <div class="form-text small text-muted">Kiểm tra hộp thư email hoặc Server Console để lấy mã OTP.</div>
+                        </div>
 
-        <div class="form-group">
-            <label>Mã xác thực OTP (6 số):</label>
-            <input type="text" name="otp" class="form-control" placeholder="Nhập OTP" required />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mật khẩu mới:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="newPassword" 
+                                       class="form-control ${errors.newPassword != null ? 'is-invalid' : ''}" 
+                                       placeholder="Tối thiểu 6 ký tự" required />
+                                <c:if test="${errors.newPassword != null}">
+                                    <div class="invalid-feedback">${errors.newPassword}</div>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Xác nhận mật khẩu mới:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-check2-circle"></i></span>
+                                <input type="password" name="confirmPassword" 
+                                       class="form-control ${errors.confirmPassword != null ? 'is-invalid' : ''}" 
+                                       placeholder="Nhập lại mật khẩu mới" required />
+                                <c:if test="${errors.confirmPassword != null}">
+                                    <div class="invalid-feedback">${errors.confirmPassword}</div>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-check-lg me-1"></i> Xác Nhận Đổi Mật Khẩu
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label>Mật khẩu mới:</label>
-            <input type="password" name="newPassword" class="form-control" placeholder="Mật khẩu mới" required />
-        </div>
-
-        <div class="form-group">
-            <label>Xác nhận mật khẩu mới:</label>
-            <input type="password" name="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu mới" required />
-        </div>
-
-        <button type="submit" class="btn-submit">Xác Nhận Đổi Mật Khẩu</button>
-    </form>
+    </div>
 </div>
 </body>
 </html>

@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,6 +24,7 @@ import vn.iotstar.service.IVideoService;
 import vn.iotstar.service.impl.CategoryServiceImpl;
 import vn.iotstar.service.impl.VideoServiceImpl;
 import vn.iotstar.util.Constant;
+import vn.iotstar.util.ValidationUtil;
 
 @SuppressWarnings("serial")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
@@ -74,18 +77,72 @@ public class AdminVideoController extends HttpServlet {
             String title = req.getParameter("title");
             String description = req.getParameter("description");
             int active = Integer.parseInt(req.getParameter("active") != null ? req.getParameter("active") : "1");
-            int categoryId = Integer.parseInt(req.getParameter("categoryId"));
+            int categoryId = 0;
+            try {
+                categoryId = Integer.parseInt(req.getParameter("categoryId"));
+            } catch (Exception e) {
+                // ignore
+            }
             String posterUrl = req.getParameter("poster");
 
+            // FORM VALIDATION: INSERT VIDEO
+            Map<String, String> errors = new HashMap<>();
+            if (ValidationUtil.isEmpty(videoId)) {
+                errors.put("videoId", "Mã video không được để trống!");
+            } else if (!ValidationUtil.isValidVideoId(videoId)) {
+                errors.put("videoId", "Mã video chỉ gồm chữ, số, dấu gạch nối hoặc gạch dưới (tối đa 50 ký tự)!");
+            } else if (videoService.findById(videoId.trim()) != null) {
+                errors.put("videoId", "Mã video đã tồn tại trong hệ thống!");
+            }
+
+            if (ValidationUtil.isEmpty(title)) {
+                errors.put("title", "Tiêu đề video không được để trống!");
+            }
+
+            Category category = (categoryId > 0) ? categoryService.findById(categoryId) : null;
+            if (category == null) {
+                errors.put("categoryId", "Vui lòng chọn danh mục hợp lệ!");
+            }
+
+            Part posterPart = null;
+            try {
+                posterPart = req.getPart("posterFile");
+            } catch (Exception e) {
+                // ignore
+            }
+
+            if (posterPart != null && posterPart.getSize() > 0) {
+                String submittedFileName = Paths.get(posterPart.getSubmittedFileName()).getFileName().toString();
+                if (!ValidationUtil.isValidImageFile(submittedFileName)) {
+                    errors.put("posterFile", "File poster phải có định dạng ảnh hợp lệ (.jpg, .jpeg, .png, .gif, .webp)!");
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                Video video = new Video();
+                video.setVideoId(videoId);
+                video.setTitle(title);
+                video.setDescription(description);
+                video.setActive(active);
+                video.setPoster(posterUrl);
+                video.setCategory(category);
+
+                List<Category> categories = categoryService.findAll();
+                req.setAttribute("categories", categories);
+                req.setAttribute("video", video);
+                req.setAttribute("errors", errors);
+                req.getRequestDispatcher("/views/admin/video-add.jsp").forward(req, resp);
+                return;
+            }
+
             Video video = new Video();
-            video.setVideoId(videoId);
+            video.setVideoId(videoId.trim());
             video.setTitle(title);
             video.setDescription(description);
             video.setActive(active);
             video.setViews(0);
 
             // Gán Category
-            Category category = categoryService.findById(categoryId);
             video.setCategory(category);
 
             // Gán User sở hữu video (Quan hệ 1-n giữa User và Videos)
@@ -112,8 +169,60 @@ public class AdminVideoController extends HttpServlet {
             String title = req.getParameter("title");
             String description = req.getParameter("description");
             int active = Integer.parseInt(req.getParameter("active") != null ? req.getParameter("active") : "1");
-            int categoryId = Integer.parseInt(req.getParameter("categoryId"));
+            int categoryId = 0;
+            try {
+                categoryId = Integer.parseInt(req.getParameter("categoryId"));
+            } catch (Exception e) {
+                // ignore
+            }
             String posterUrl = req.getParameter("poster");
+
+            // FORM VALIDATION: EDIT / UPDATE VIDEO
+            Map<String, String> errors = new HashMap<>();
+            if (ValidationUtil.isEmpty(title)) {
+                errors.put("title", "Tiêu đề video không được để trống!");
+            }
+
+            Category category = (categoryId > 0) ? categoryService.findById(categoryId) : null;
+            if (category == null) {
+                errors.put("categoryId", "Vui lòng chọn danh mục hợp lệ!");
+            }
+
+            Part posterPart = null;
+            try {
+                posterPart = req.getPart("posterFile");
+            } catch (Exception e) {
+                // ignore
+            }
+
+            if (posterPart != null && posterPart.getSize() > 0) {
+                String submittedFileName = Paths.get(posterPart.getSubmittedFileName()).getFileName().toString();
+                if (!ValidationUtil.isValidImageFile(submittedFileName)) {
+                    errors.put("posterFile", "File poster phải có định dạng ảnh hợp lệ (.jpg, .jpeg, .png, .gif, .webp)!");
+                }
+            }
+
+            if (!errors.isEmpty()) {
+                Video video = videoService.findById(videoId);
+                if (video == null) {
+                    video = new Video();
+                    video.setVideoId(videoId);
+                }
+                video.setTitle(title);
+                video.setDescription(description);
+                video.setActive(active);
+                video.setCategory(category);
+                if (posterUrl != null && !posterUrl.trim().isEmpty()) {
+                    video.setPoster(posterUrl);
+                }
+
+                List<Category> categories = categoryService.findAll();
+                req.setAttribute("categories", categories);
+                req.setAttribute("video", video);
+                req.setAttribute("errors", errors);
+                req.getRequestDispatcher("/views/admin/video-edit.jsp").forward(req, resp);
+                return;
+            }
 
             Video video = videoService.findById(videoId);
             if (video != null) {
@@ -121,7 +230,6 @@ public class AdminVideoController extends HttpServlet {
                 video.setDescription(description);
                 video.setActive(active);
 
-                Category category = categoryService.findById(categoryId);
                 video.setCategory(category);
 
                 String posterFile = handleUploadPoster(req, "posterFile");

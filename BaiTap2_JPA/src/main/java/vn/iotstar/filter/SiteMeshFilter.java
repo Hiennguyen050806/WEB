@@ -61,7 +61,10 @@ public class SiteMeshFilter implements Filter {
                 String title = extractTitle(originalContent);
                 String body = extractBody(originalContent);
 
-                req.setAttribute("pageTitle", title);
+                String defaultTitle = path.startsWith("/admin") ? "Admin Dashboard - JPA 3.0" : "Hệ Thống Video & Bán Hàng";
+                String finalTitle = (title != null && !title.trim().isEmpty()) ? title : defaultTitle;
+
+                req.setAttribute("pageTitle", finalTitle);
                 req.setAttribute("body", body);
 
                 String decoratorPage = path.startsWith("/admin") ? "/decorators/admin.jsp" : "/decorators/web.jsp";
@@ -72,8 +75,8 @@ public class SiteMeshFilter implements Filter {
 
                 String decoratedHtml = decoratorWrapper.toString();
                 if (decoratedHtml != null) {
-                    decoratedHtml = decoratedHtml.replace("<sitemesh:write property='body'/>", body);
-                    decoratedHtml = decoratedHtml.replace("<sitemesh:write property='title'/>", title);
+                    decoratedHtml = decoratedHtml.replace("<sitemesh:write property='body'/>", body != null ? body : "");
+                    decoratedHtml = decoratedHtml.replace("<sitemesh:write property='title'/>", finalTitle);
                 }
 
                 resp.setContentType("text/html;charset=UTF-8");

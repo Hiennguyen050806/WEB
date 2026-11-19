@@ -4,57 +4,75 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Đăng Nhập - Xác Thực JPA</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .auth-card { width: 380px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
-        .form-control { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
-        .alert-success { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
-        .btn-submit { width: 100%; padding: 12px; background: #007bff; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .btn-submit:hover { background: #0056b3; }
-        .checkbox-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 13px; }
-        .footer-links { text-align: center; margin-top: 20px; font-size: 14px; }
-        .footer-links a { color: #007bff; text-decoration: none; }
-    </style>
+    <title>Đăng Nhập - Hệ Thống Video &amp; Bán Hàng</title>
 </head>
 <body>
-<jsp:include page="/views/common/header.jsp" />
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4 p-md-5">
+                    <h3 class="card-title text-center mb-4 fw-bold text-primary">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Đăng Nhập
+                    </h3>
 
-<div class="auth-card">
-    <h2>Đăng Nhập</h2>
+                    <c:if test="${alert != null}">
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> ${alert}
+                        </div>
+                    </c:if>
+                    <c:if test="${success != null}">
+                        <div class="alert alert-success py-2 small" role="alert">
+                            <i class="bi bi-check-circle-fill me-1"></i> ${success}
+                        </div>
+                    </c:if>
 
-    <c:if test="${alert != null}">
-        <div class="alert-error">${alert}</div>
-    </c:if>
-    <c:if test="${success != null}">
-        <div class="alert-success">${success}</div>
-    </c:if>
+                    <form action="${pageContext.request.contextPath}/login" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên đăng nhập:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" name="username" value="${username != null ? username : param.username}" 
+                                       class="form-control ${errors.username != null ? 'is-invalid' : ''}" 
+                                       placeholder="Nhập tên đăng nhập" required />
+                                <c:if test="${errors.username != null}">
+                                    <div class="invalid-feedback">${errors.username}</div>
+                                </c:if>
+                            </div>
+                        </div>
 
-    <form action="${pageContext.request.contextPath}/login" method="post">
-        <div class="form-group">
-            <label>Tên đăng nhập:</label>
-            <input type="text" name="username" class="form-control" placeholder="Nhập username" required />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mật khẩu (SHA-256):</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" 
+                                       class="form-control ${errors.password != null ? 'is-invalid' : ''}" 
+                                       placeholder="Nhập mật khẩu" required />
+                                <c:if test="${errors.password != null}">
+                                    <div class="invalid-feedback">${errors.password}</div>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3 small">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" value="on" id="rememberMe">
+                                <label class="form-check-label text-muted" for="rememberMe">Ghi nhớ đăng nhập</label>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/forgot-password" class="text-decoration-none">Quên mật khẩu?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Đăng Nhập
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 small text-muted">
+                        Chưa có tài khoản? <a href="${pageContext.request.contextPath}/register" class="fw-semibold text-decoration-none">Đăng ký ngay</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label>Mật khẩu (Được mã hóa Hash):</label>
-            <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required />
-        </div>
-
-        <div class="checkbox-row">
-            <label><input type="checkbox" name="remember" value="on" /> Ghi nhớ đăng nhập</label>
-            <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a>
-        </div>
-
-        <button type="submit" class="btn-submit">Đăng Nhập</button>
-    </form>
-
-    <div class="footer-links">
-        Chưa có tài khoản? <a href="${pageContext.request.contextPath}/register">Đăng ký ngay</a>
     </div>
 </div>
 </body>

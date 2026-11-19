@@ -5,64 +5,112 @@
 <head>
     <meta charset="UTF-8">
     <title>Đăng Ký Tài Khoản - Kích Hoạt OTP</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
-        .auth-card { width: 420px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        .form-control { width: 100%; padding: 9px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
-        .btn-submit { width: 100%; padding: 11px; background: #28a745; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .btn-submit:hover { background: #218838; }
-        .footer-links { text-align: center; margin-top: 15px; font-size: 14px; }
-        .footer-links a { color: #007bff; text-decoration: none; }
-        .info-note { font-size: 12px; color: #666; margin-top: 4px; }
-    </style>
 </head>
 <body>
-<jsp:include page="/views/common/header.jsp" />
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4 p-md-5">
+                    <h3 class="card-title text-center mb-4 fw-bold text-success">
+                        <i class="bi bi-person-plus-fill me-2"></i>Đăng Ký Tài Khoản
+                    </h3>
 
-<div class="auth-card">
-    <h2>Đăng Ký Tài Khoản</h2>
+                    <c:if test="${alert != null}">
+                        <div class="alert alert-danger py-2 small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> ${alert}
+                        </div>
+                    </c:if>
 
-    <c:if test="${alert != null}">
-        <div class="alert-error">${alert}</div>
-    </c:if>
+                    <form action="${pageContext.request.contextPath}/register" method="post" novalidate>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên đăng nhập <span class="text-danger">*</span>:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" name="username" value="${username != null ? username : param.username}" 
+                                       class="form-control ${errors.username != null ? 'is-invalid' : ''}" 
+                                       placeholder="Ví dụ: nguyenvana (3-30 ký tự)" required />
+                                <c:if test="${errors.username != null}">
+                                    <div class="invalid-feedback">${errors.username}</div>
+                                </c:if>
+                            </div>
+                        </div>
 
-    <form action="${pageContext.request.contextPath}/register" method="post">
-        <div class="form-group">
-            <label>Tên đăng nhập:</label>
-            <input type="text" name="username" class="form-control" required placeholder="Nhập username" />
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email nhận mã OTP <span class="text-danger">*</span>:</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" value="${email != null ? email : param.email}" 
+                                       class="form-control ${errors.email != null ? 'is-invalid' : ''}" 
+                                       placeholder="email@example.com" required />
+                                <c:if test="${errors.email != null}">
+                                    <div class="invalid-feedback">${errors.email}</div>
+                                </c:if>
+                            </div>
+                            <div class="form-text small text-muted"><i class="bi bi-info-circle me-1"></i>Mã OTP 6 chữ số sẽ được gửi về email (và console server).</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span>:</label>
+                                <input type="text" name="fullname" value="${fullname != null ? fullname : param.fullname}" 
+                                       class="form-control ${errors.fullname != null ? 'is-invalid' : ''}" 
+                                       placeholder="Nguyễn Văn A" required />
+                                <c:if test="${errors.fullname != null}">
+                                    <div class="invalid-feedback">${errors.fullname}</div>
+                                </c:if>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Số điện thoại:</label>
+                                <input type="text" name="phone" value="${phone != null ? phone : param.phone}" 
+                                       class="form-control ${errors.phone != null ? 'is-invalid' : ''}" 
+                                       placeholder="0901234567" />
+                                <c:if test="${errors.phone != null}">
+                                    <div class="invalid-feedback">${errors.phone}</div>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span>:</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                    <input type="password" name="password" 
+                                           class="form-control ${errors.password != null ? 'is-invalid' : ''}" 
+                                           placeholder="Tối thiểu 6 ký tự" required />
+                                    <c:if test="${errors.password != null}">
+                                        <div class="invalid-feedback">${errors.password}</div>
+                                    </c:if>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Xác nhận mật khẩu <span class="text-danger">*</span>:</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text bg-light"><i class="bi bi-shield-check"></i></span>
+                                    <input type="password" name="confirmPassword" 
+                                           class="form-control ${errors.confirmPassword != null ? 'is-invalid' : ''}" 
+                                           placeholder="Nhập lại mật khẩu" required />
+                                    <c:if test="${errors.confirmPassword != null}">
+                                        <div class="invalid-feedback">${errors.confirmPassword}</div>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold mt-2 shadow-sm">
+                            <i class="bi bi-send-check me-1"></i> Đăng Ký &amp; Nhận OTP Kích Hoạt
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 small text-muted">
+                        Đã có tài khoản? <a href="${pageContext.request.contextPath}/login" class="fw-semibold text-decoration-none">Đăng nhập ngay</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label>Email nhận mã OTP:</label>
-            <input type="email" name="email" class="form-control" required placeholder="example@gmail.com" />
-            <div class="info-note">* Mã xác thực OTP sẽ được gửi về email này (và hiển thị tại Server Console).</div>
-        </div>
-
-        <div class="form-group">
-            <label>Họ và tên:</label>
-            <input type="text" name="fullname" class="form-control" required placeholder="Họ và tên" />
-        </div>
-
-        <div class="form-group">
-            <label>Số điện thoại:</label>
-            <input type="text" name="phone" class="form-control" placeholder="Số điện thoại" />
-        </div>
-
-        <div class="form-group">
-            <label>Mật khẩu:</label>
-            <input type="password" name="password" class="form-control" required placeholder="Mật khẩu" />
-            <div class="info-note">* Mật khẩu sẽ được mã hóa an toàn bằng SHA-256 Hash.</div>
-        </div>
-
-        <button type="submit" class="btn-submit">Đăng Ký &amp; Nhận OTP</button>
-    </form>
-
-    <div class="footer-links">
-        Đã có tài khoản? <a href="${pageContext.request.contextPath}/login">Đăng nhập ngay</a>
     </div>
 </div>
 </body>

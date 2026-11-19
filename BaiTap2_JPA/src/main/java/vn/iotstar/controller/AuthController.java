@@ -1,6 +1,8 @@
 package vn.iotstar.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +14,7 @@ import vn.iotstar.entity.User;
 import vn.iotstar.service.IUserService;
 import vn.iotstar.service.impl.UserServiceImpl;
 import vn.iotstar.util.Constant;
+import vn.iotstar.util.ValidationUtil;
 
 @SuppressWarnings("serial")
 @WebServlet(urlPatterns = { "/login", "/logout", "/register", "/verify-otp", "/forgot-password", "/reset-password" })
@@ -83,13 +86,27 @@ public class AuthController extends HttpServlet {
         req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
     }
 
+    /**
+     * FORM VALIDATION: LOGIN
+     */
     private void handlePostLogin(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
         String remember = req.getParameter("remember");
 
-        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            req.setAttribute("alert", "Tài khoản và mật khẩu không được để trống!");
+        Map<String, String> errors = new HashMap<>();
+
+        if (ValidationUtil.isEmpty(username)) {
+            errors.put("username", "Tên đăng nhập không được để trống!");
+        }
+
+        if (ValidationUtil.isEmpty(password)) {
+            errors.put("password", "Mật khẩu không được để trống!");
+        }
+
+        if (!errors.isEmpty()) {
+            req.setAttribute("errors", errors);
+            req.setAttribute("username", username);
             req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
             return;
         }
@@ -97,6 +114,7 @@ public class AuthController extends HttpServlet {
         User user = userService.login(username.trim(), password);
         if (user == null) {
             req.setAttribute("alert", "Tài khoản hoặc mật khẩu không chính xác!");
+            req.setAttribute("username", username);
             req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
             return;
         }
@@ -145,27 +163,65 @@ public class AuthController extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/login");
     }
 
+    /**
+     * FORM VALIDATION: REGISTER
+     */
     private void handlePostRegister(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
+        String confirmPassword = req.getParameter("confirmPassword");
         String email = req.getParameter("email");
         String fullname = req.getParameter("fullname");
         String phone = req.getParameter("phone");
 
-        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty() || email == null) {
-            req.setAttribute("alert", "Vui lòng nhập đầy đủ các trường bắt buộc!");
-            req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
-            return;
+        Map<String, String> errors = new HashMap<>();
+
+        // 1. Kiểm tra username
+        if (ValidationUtil.isEmpty(username)) {
+            errors.put("username", "Tên đăng nhập không được để trống!");
+        } else if (!ValidationUtil.isValidUsername(username)) {
+            errors.put("username", "Tên đăng nhập từ 3-30 ký tự, không chứa ký tự đặc biệt hay khoảng trắng!");
+        } else if (userService.checkExistUsername(username.trim())) {
+            errors.put("username", "Tên đăng nhập đã tồn tại trong hệ thống!");
         }
 
-        if (userService.checkExistUsername(username)) {
-            req.setAttribute("alert", "Tên đăng nhập đã tồn tại trong hệ thống!");
-            req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
-            return;
+        // 2. Kiểm tra email
+        if (ValidationUtil.isEmpty(email)) {
+            errors.put("email", "Email không được để trống!");
+        } else if (!ValidationUtil.isValidEmail(email)) {
+            errors.put("email", "Địa chỉ email không đúng định dạng!");
+        } else if (userService.checkExistEmail(email.trim())) {
+            errors.put("email", "Email này đã được sử dụng!");
         }
 
-        if (userService.checkExistEmail(email)) {
-            req.setAttribute("alert", "Email này đã được sử dụng!");
+        // 3. Kiểm tra fullname
+        if (ValidationUtil.isEmpty(fullname)) {
+            errors.put("fullname", "Họ và tên không được để trống!");
+        }
+
+        // 4. Kiểm tra phone
+        if (!ValidationUtil.isEmpty(phone) && !ValidationUtil.isValidPhone(phone)) {
+            errors.put("phone", "Số điện thoại không đúng định dạng (10 chữ số, vd: 0908617108)!");
+        }
+
+        // 5. Kiểm tra mật khẩu
+        if (ValidationUtil.isEmpty(password)) {
+            errors.put("password", "Mật khẩu không được để trống!");
+        } else if (!ValidationUtil.isValidPassword(password)) {
+            errors.put("password", "Mật khẩu phải có độ dài từ 6 ký tự trở lên!");
+        }
+
+        // 6. Kiểm tra xác nhận mật khẩu
+        if (!ValidationUtil.isEmpty(confirmPassword) && !confirmPassword.equals(password)) {
+            errors.put("confirmPassword", "Mật khẩu xác nhận không khớp!");
+        }
+
+        if (!errors.isEmpty()) {
+            req.setAttribute("errors", errors);
+            req.setAttribute("username", username);
+            req.setAttribute("email", email);
+            req.setAttribute("fullname", fullname);
+            req.setAttribute("phone", phone);
             req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
             return;
         }
@@ -185,8 +241,8 @@ public class AuthController extends HttpServlet {
         String email = req.getParameter("email");
         String otp = req.getParameter("otp");
 
-        if (email == null || otp == null || otp.trim().isEmpty()) {
-            req.setAttribute("alert", "Vui lòng nhập mã OTP!");
+        if (ValidationUtil.isEmpty(otp) || otp.trim().length() != 6) {
+            req.setAttribute("alert", "Vui lòng nhập đúng mã OTP gồm 6 chữ số!");
             req.setAttribute("email", email);
             req.getRequestDispatcher("/views/auth/verify-otp.jsp").forward(req, resp);
             return;
@@ -203,10 +259,21 @@ public class AuthController extends HttpServlet {
         }
     }
 
+    /**
+     * FORM VALIDATION: FORGOT PASSWORD
+     */
     private void handlePostForgotPassword(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = req.getParameter("email");
-        if (email == null || email.trim().isEmpty()) {
-            req.setAttribute("alert", "Vui lòng nhập địa chỉ email!");
+
+        if (ValidationUtil.isEmpty(email)) {
+            req.setAttribute("emailError", "Vui lòng nhập địa chỉ email!");
+            req.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(req, resp);
+            return;
+        }
+
+        if (!ValidationUtil.isValidEmail(email)) {
+            req.setAttribute("emailError", "Định dạng email không hợp lệ!");
+            req.setAttribute("email", email);
             req.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(req, resp);
             return;
         }
@@ -218,18 +285,36 @@ public class AuthController extends HttpServlet {
             req.getRequestDispatcher("/views/auth/reset-password.jsp").forward(req, resp);
         } else {
             req.setAttribute("alert", "Email không tồn tại trong hệ thống!");
+            req.setAttribute("email", email);
             req.getRequestDispatcher("/views/auth/forgot-password.jsp").forward(req, resp);
         }
     }
 
+    /**
+     * FORM VALIDATION: RESET PASSWORD
+     */
     private void handlePostResetPassword(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String email = req.getParameter("email");
         String otp = req.getParameter("otp");
         String newPassword = req.getParameter("newPassword");
         String confirmPassword = req.getParameter("confirmPassword");
 
-        if (newPassword == null || !newPassword.equals(confirmPassword)) {
-            req.setAttribute("alert", "Mật khẩu xác nhận không khớp!");
+        Map<String, String> errors = new HashMap<>();
+
+        if (ValidationUtil.isEmpty(otp) || otp.trim().length() != 6) {
+            errors.put("otp", "Mã OTP phải gồm đúng 6 chữ số!");
+        }
+
+        if (ValidationUtil.isEmpty(newPassword) || !ValidationUtil.isValidPassword(newPassword)) {
+            errors.put("newPassword", "Mật khẩu mới tối thiểu 6 ký tự!");
+        }
+
+        if (ValidationUtil.isEmpty(confirmPassword) || !confirmPassword.equals(newPassword)) {
+            errors.put("confirmPassword", "Mật khẩu xác nhận không khớp!");
+        }
+
+        if (!errors.isEmpty()) {
+            req.setAttribute("errors", errors);
             req.setAttribute("email", email);
             req.getRequestDispatcher("/views/auth/reset-password.jsp").forward(req, resp);
             return;
