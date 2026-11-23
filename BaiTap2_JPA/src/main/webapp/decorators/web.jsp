@@ -74,12 +74,25 @@
                             </a>
                         </c:when>
                         <c:otherwise>
-                            <span class="text-white me-3 small">
-                                Xin chào, <strong>${sessionScope.account.fullname != null ? sessionScope.account.fullname : sessionScope.account.username}</strong>
-                                <c:if test="${sessionScope.account.roleid == 1}">
-                                    <span class="badge bg-danger ms-1">Admin</span>
-                                </c:if>
-                            </span>
+                            <a href="${pageContext.request.contextPath}/user/profile" class="text-white text-decoration-none me-3 small d-flex align-items-center">
+                                <c:choose>
+                                    <c:when test="${not empty sessionScope.account.avatar}">
+                                        <img src="${sessionScope.account.avatar}" alt="Avatar" class="rounded-circle me-1 border border-light" style="width: 28px; height: 28px; object-fit: cover;">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <i class="bi bi-person-circle fs-5 me-1"></i>
+                                    </c:otherwise>
+                                </c:choose>
+                                <span>
+                                    <strong>${sessionScope.account.fullname != null ? sessionScope.account.fullname : sessionScope.account.username}</strong>
+                                    <c:if test="${sessionScope.account.roleid == 1}">
+                                        <span class="badge bg-danger ms-1">Admin</span>
+                                    </c:if>
+                                </span>
+                            </a>
+                            <a href="${pageContext.request.contextPath}/user/profile" class="btn btn-outline-info btn-sm me-2">
+                                <i class="bi bi-person-gear me-1"></i> Hồ sơ
+                            </a>
                             <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger btn-sm">
                                 <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
                             </a>

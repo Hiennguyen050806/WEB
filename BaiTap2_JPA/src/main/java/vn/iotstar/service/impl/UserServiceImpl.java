@@ -142,6 +142,43 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public boolean initiateEmailUpdate(int userId, String newEmail) {
+        User user = userDao.findById(userId);
+        if (user == null || newEmail == null) {
+            return false;
+        }
+
+        // Sinh mã OTP 6 chữ số
+        String otp = EmailUtil.generateOtp();
+        long expiryTime = System.currentTimeMillis() + (10 * 60 * 1000); // 10 phút
+
+        user.setOtpCode(otp);
+        user.setOtpExpiry(new Date(expiryTime));
+        userDao.update(user);
+
+        // Gửi mã OTP tới email mới
+        EmailUtil.sendOtpEmail(newEmail, otp, "Xác nhận cập nhật địa chỉ Email mới cho tài khoản " + user.getUsername());
+        return true;
+    }
+
+    @Override
+    public boolean confirmEmailUpdate(int userId, String newEmail, String otp) {
+        User user = userDao.findById(userId);
+        if (user != null && user.getOtpCode() != null && otp != null) {
+            if (user.getOtpCode().trim().equals(otp.trim())) {
+                if (user.getOtpExpiry() != null && user.getOtpExpiry().after(new Date())) {
+                    user.setEmail(newEmail.trim());
+                    user.setOtpCode(null);
+                    user.setOtpExpiry(null);
+                    userDao.update(user);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean checkExistUsername(String username) {
         return userDao.checkExistUsername(username);
     }

@@ -24,6 +24,10 @@ public interface IUserService {
 
     void update(User user);
 
+    boolean initiateEmailUpdate(int userId, String newEmail);
+
+    boolean confirmEmailUpdate(int userId, String newEmail, String otp);
+
     boolean checkExistUsername(String username);
 
     boolean checkExistEmail(String email);
